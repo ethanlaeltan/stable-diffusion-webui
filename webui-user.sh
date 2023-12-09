@@ -42,7 +42,9 @@ export PYTORCH_CUDA_ALLOC_CONF="-- garbage_collection_threshold:0.6 --max_split_
 #export BLIP_COMMIT_HASH=""
 
 # Uncomment to enable accelerated launch
-#export ACCELERATE="True"
+# export ACCELERATE="True"
+
+
 
 # Uncomment to disable TCMalloc
 #export NO_TCMALLOC="True"
