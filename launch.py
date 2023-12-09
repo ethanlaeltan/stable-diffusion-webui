@@ -1,37 +1,36 @@
-# this scripts installs necessary requirements and launches main program in webui.py
-import subprocess
-import os
-import sys
-import importlib.util
-import shlex
-import platform
-import json
+from modules import launch_utils
 
-from modules import cmd_args
-from modules.paths_internal import script_path, extensions_dir
+args = launch_utils.args
+python = launch_utils.python
+git = launch_utils.git
+index_url = launch_utils.index_url
+dir_repos = launch_utils.dir_repos
 
-commandline_args = os.environ.get('COMMANDLINE_ARGS', "")
-sys.argv += shlex.split(commandline_args)
+commit_hash = launch_utils.commit_hash
+git_tag = launch_utils.git_tag
 
-args, _ = cmd_args.parser.parse_known_args()
+run = launch_utils.run
+is_installed = launch_utils.is_installed
+repo_dir = launch_utils.repo_dir
 
-python = sys.executable
-git = os.environ.get('GIT', "git")
-index_url = os.environ.get('INDEX_URL', "")
-stored_commit_hash = None
-stored_git_tag = None
-dir_repos = "repositories"
-
-if 'GRADIO_ANALYTICS_ENABLED' not in os.environ:
-    os.environ['GRADIO_ANALYTICS_ENABLED'] = 'False'
+run_pip = launch_utils.run_pip
+check_run_python = launch_utils.check_run_python
+git_clone = launch_utils.git_clone
+git_pull_recursive = launch_utils.git_pull_recursive
+list_extensions = launch_utils.list_extensions
+run_extension_installer = launch_utils.run_extension_installer
+prepare_environment = launch_utils.prepare_environment
+configure_for_tests = launch_utils.configure_for_tests
+start = launch_utils.start
 
 
-def check_python_version():
-    is_windows = platform.system() == "Windows"
-    major = sys.version_info.major
-    minor = sys.version_info.minor
-    micro = sys.version_info.micro
+def main():
+    if args.dump_sysinfo:
+        filename = launch_utils.dump_sysinfo()
 
+        print(f"Sysinfo saved as {filename}. Exiting...")
+
+<<<<<<< HEAD
     if is_windows:
         supported_minors = [10]
     else:
@@ -322,49 +321,21 @@ def prepare_environment():
     
     if "--exit" in sys.argv:
         print("Exiting because of --exit argument")
+=======
+>>>>>>> 4afaaf8a020c1df457bcf7250cb1c7f609699fa7
         exit(0)
 
-    if args.tests and not args.no_tests:
-        exitcode = tests(args.tests)
-        exit(exitcode)
+    launch_utils.startup_timer.record("initial startup")
 
+    with launch_utils.startup_timer.subcategory("prepare environment"):
+        if not args.skip_prepare_environment:
+            prepare_environment()
 
-def tests(test_dir):
-    if "--api" not in sys.argv:
-        sys.argv.append("--api")
-    if "--ckpt" not in sys.argv:
-        sys.argv.append("--ckpt")
-        sys.argv.append(os.path.join(script_path, "test/test_files/empty.pt"))
-    if "--skip-torch-cuda-test" not in sys.argv:
-        sys.argv.append("--skip-torch-cuda-test")
-    if "--disable-nan-check" not in sys.argv:
-        sys.argv.append("--disable-nan-check")
-    if "--no-tests" not in sys.argv:
-        sys.argv.append("--no-tests")
+    if args.test_server:
+        configure_for_tests()
 
-    print(f"Launching Web UI in another process for testing with arguments: {' '.join(sys.argv[1:])}")
-
-    os.environ['COMMANDLINE_ARGS'] = ""
-    with open(os.path.join(script_path, 'test/stdout.txt'), "w", encoding="utf8") as stdout, open(os.path.join(script_path, 'test/stderr.txt'), "w", encoding="utf8") as stderr:
-        proc = subprocess.Popen([sys.executable, *sys.argv], stdout=stdout, stderr=stderr)
-
-    import test.server_poll
-    exitcode = test.server_poll.run_tests(proc, test_dir)
-
-    print(f"Stopping Web UI process with id {proc.pid}")
-    proc.kill()
-    return exitcode
-
-
-def start():
-    print(f"Launching {'API server' if '--nowebui' in sys.argv else 'Web UI'} with arguments: {' '.join(sys.argv[1:])}")
-    import webui
-    if '--nowebui' in sys.argv:
-        webui.api_only()
-    else:
-        webui.webui()
+    start()
 
 
 if __name__ == "__main__":
-    prepare_environment()
-    start()
+    main()

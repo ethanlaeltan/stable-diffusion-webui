@@ -10,7 +10,9 @@
 #clone_dir="stable-diffusion-webui"
 
 # Commandline arguments for webui.py, for example: export COMMANDLINE_ARGS="--medvram --opt-split-attention"
-#export COMMANDLINE_ARGS=""
+export COMMANDLINE_ARGS="--medvram --xformers --no-half-vae --opt-split-attention --precision-full"
+
+export PYTORCH_CUDA_ALLOC_CONF="-- garbage_collection_threshold:0.6 --max_split_size_mb:128"
 
 # python3 executable
 #python_cmd="python3"
@@ -36,7 +38,6 @@
 
 # Fixed git commits
 #export STABLE_DIFFUSION_COMMIT_HASH=""
-#export TAMING_TRANSFORMERS_COMMIT_HASH=""
 #export CODEFORMER_COMMIT_HASH=""
 #export BLIP_COMMIT_HASH=""
 
